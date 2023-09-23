@@ -6,7 +6,7 @@ const updateDb = async () => {
     const now = new Date();
     const updateUrl = process.env.UPDATE_URL;
     const bearToken = process.env.BEARER_TOKEN;
-    
+
     console.log(`Trying to update database at ${now}`);
     
     try {
@@ -36,7 +36,12 @@ const findNextUpdate = (competitors, now) => {
         }
     }
 
-    const timeUntilNextRun = nextGameStart - now + 210 * 60 * 1000;
+    let timeUntilNextRun = 8 * 60 * 60 * 1000;
+    const timeUntilNextGameUpdate = nextGameStart - now + 210 * 60 * 1000;
+
+    if(timeUntilNextGameUpdate < timeUntilNextRun) {
+        timeUntilNextRun = timeUntilNextGameUpdate;
+    }
 
     console.log(`\nNext game start: ${nextGameStart}
         \ntime until next run (ms): ${timeUntilNextRun}\n`);
@@ -44,12 +49,12 @@ const findNextUpdate = (competitors, now) => {
     scheduleNextRun(timeUntilNextRun, now);
 }
 
-const scheduleNextRun = (delayTime, now) => {
-    const scheduledTime = new Date(now.getTime() + delayTime);
+const scheduleNextRun = (timeUntilNextRun, now) => {
+    const scheduledTime = new Date(now.getTime() + timeUntilNextRun);
     console.log(`Next run scheduled for: ${scheduledTime}`); 
     setTimeout(() => {
         updateDb();
-    }, delayTime);
+    }, timeUntilNextRun);
 }
 
 
