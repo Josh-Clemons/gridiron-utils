@@ -20,6 +20,8 @@ const updateDb = async () => {
     } catch (error) {
         console.log(`Error updating grid-iron database at ${new Date()}`);
         console.log(error.message);
+        // rerun 2 hours after failing
+        scheduleNextRun(2 * 60 * 60 * 1000, now);
     }
     
 }
@@ -36,8 +38,8 @@ const findNextUpdate = (competitors, now) => {
         }
     }
 
-    let timeUntilNextRun = 8 * 60 * 60 * 1000;
-    const timeUntilNextGameUpdate = nextGameStart - now + 210 * 60 * 1000;
+    let timeUntilNextRun = 8 * 60 * 60 * 1000; // 8 hours in ms
+    const timeUntilNextGameUpdate = nextGameStart - now + 3.5 * 60 * 60 * 1000; // 3.5 hours after next game starts
 
     if(timeUntilNextGameUpdate < timeUntilNextRun) {
         timeUntilNextRun = timeUntilNextGameUpdate;
@@ -49,12 +51,12 @@ const findNextUpdate = (competitors, now) => {
     scheduleNextRun(timeUntilNextRun, now);
 }
 
-const scheduleNextRun = (timeUntilNextRun, now) => {
-    const scheduledTime = new Date(now.getTime() + timeUntilNextRun);
+const scheduleNextRun = (timeoutDelay, now) => {
+    const scheduledTime = new Date(now.getTime() + timeoutDelay);
     console.log(`Next run scheduled for: ${scheduledTime}`); 
     setTimeout(() => {
         updateDb();
-    }, timeUntilNextRun);
+    }, timeoutDelay);
 }
 
 
